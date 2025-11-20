@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Exit immediately if a command exits with a non-zero status.
+set -e
+
+# It's still good practice to have a virtual display for potential plots.
+Xvfb :1 &
+export DISPLAY=:1
+
+# --- Autograder Setup ---
+# Move to the source directory where our generic tester is.
+cd /autograder/source
+
+# Copy the student's entire submission. They might submit multiple files.
+cp /autograder/submission/* .
+
+# --- Run the Tests ---
+# Execute the universal Octave test script. All logic is now inside Octave.
+octave-cli --eval "run_tests"
+
+# --- Cleanup ---
+pkill Xvfb
