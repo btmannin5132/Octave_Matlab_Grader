@@ -2,31 +2,36 @@
   function [json_parts, student_run_error] = function_test(student_run_error,task)
     funcJson = {};
     json_parts = {};
-    function_tests = task.func_args
-    solution_script_name = task.solution_file
-    student_script_name = task.student_file
-    function_points = task.func_points_per_Test
-
+    function_tests = task.func_args;
+    solution_script_name = task.solution_file;
+    student_script_name = task.student_file;
+    function_points = task.func_points_per_Test;
+    function_outputs = task.num_outputs;
+    output = "";
     try
 
-      for i = 1:numel(function_tests)
-        test_args= function_tests{i};
-
+      for i = 1:size(function_tests)(1)
+        test_args= function_tests(i,:);
         max_score = function_points(i);
-        test_name = sprintf('Check function ''%s'' with arguments: %s', student_script_name, mat2str(cell2mat(test_args)));
+
+        test_name = sprintf('\nCheck function ''%s'' with arguments: %s', student_script_name, test_args);
         score = 0;
         output = 'Function not found or defined correctly.';
 
         % Get the correct output from the solution file
-        fprintf(' \n''%s'' output with arguments: %s\n', solution_script_name, mat2str(cell2mat(test_args)))
-        solFunc = str2func(strrep(solution_script_name, '.m', ''));
-        solution_output = wrap(solFunc, test_args{:});
-        %solution_output = feval(strrep(solution_script_name, '.m', ''), test_args{:});
+        fprintf('%s\n',test_name)
+        solution_output = cell(1, function_outputs);
+        student_output = solution_output;
+
+        solFunc = strrep(solution_script_name, '.m', '');
+        solcmd = sprintf('%s(%s);', solFunc, test_args);
+        [solution_output{:}] = eval(solcmd)
+
         try
           % Run the student's function
-          fprintf(' ''%s'' output with arguments: %s\n', student_script_name, mat2str(cell2mat(test_args)));
-          stuFunc = str2func(strrep(student_script_name, '.m', ''));
-          student_output = wrap(stuFunc, test_args{:});
+          stuFunc = strrep(student_script_name, '.m', '');
+          stucmd = sprintf('%s(%s);', stuFunc, test_args)
+          [student_output{:}] = eval(stucmd)
           %student_output = feval(strrep(student_script_name, '.m', ''), test_args{:});
 
           solution_vec = cell2mat(solution_output); % Converts {[wireLen], [springMass]} to [wireLen, springMass]
@@ -52,8 +57,8 @@
         json_parts{end+1} = build_json_test(test_name, max_score, score, output, 'visible');
 
         try
-          reference_output = strip_output(evalc(["feval(strrep(solution_script_name, '.m', ''), test_args{:});"]));
-          student_output = strip_output(evalc(["feval(strrep(student_script_name, '.m', ''), test_args{:});"]));
+          reference_output = strip_output(evalc(solcmd));
+          student_output = strip_output(evalc(stucmd));
 
         catch ME
           student_run_error = true;

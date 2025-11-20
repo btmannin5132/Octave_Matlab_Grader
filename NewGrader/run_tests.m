@@ -22,7 +22,7 @@ catch
 for taskid = 1:length(tasks)
     funcCheck = tasks{taskid}.func_test;
     if funcCheck == true
-        disp("In loop")
+        %disp("In loop")
         [funcJson, student_run_error]  = function_test(student_run_error,tasks{taskid});
         json_parts = horzcat(json_parts,funcJson);
     end

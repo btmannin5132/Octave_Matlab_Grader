@@ -1,16 +1,14 @@
-function [json_parts,student_run_error,tasks] = varTest(tasks,student_run_error)
+function [json_parts,student_run_error,tasks] = file_check(tasks,student_run_error)
     json_parts = {};
     for task_id = 1:length(tasks)
         % 1. Extract the struct from the cell
         current_task_struct = tasks{task_id}; 
         
         student_file_name = current_task_struct.student_file;
-        disp(student_file_name);
-        file_list = glob([student_file_name, '*.m'])
-        disp(file_list)
+
         try
             % Find the file list using the original name
-            file_list = glob([student_file_name, '*.m'])
+            file_list = glob([student_file_name, '*.m']);
 
             if ~isempty(file_list)
                 % 2. Modify the temporary struct, using the mandatory index (1)
