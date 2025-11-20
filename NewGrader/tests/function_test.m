@@ -9,7 +9,7 @@
     function_outputs = task.num_outputs;
     output = "";
 
-    fprintf("\nRunning Function Test\n\n")
+    fprintf("\nRunning Function Test with file %s\n", student_script_name)
     try
 
       for i = 1:size(function_tests)(1)

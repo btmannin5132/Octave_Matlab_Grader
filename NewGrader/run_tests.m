@@ -1,5 +1,9 @@
 function run_tests()
+
   clear
+  global AUTOGRADER_INDEX
+  global AUTOGRADER_INPUTS
+
   addpath('tests');
   student_run_error = false;
   % --- 1. Load Configuration ---
@@ -19,17 +23,36 @@ catch
     [filejson, student_run_error,tasks]  = file_check(tasks,student_run_error);
     json_parts = horzcat(json_parts,filejson);
 
+
+
 for taskid = 1:length(tasks)
+  student_Script = tasks{taskid}.student_file;
+  if check_for_clear(student_Script)
+    student_run_error = true;
+    output_msg = sprintf('Your %s file contains the "clear" command, which is not allowed as it removes necessary variables for testing. Please remove it and try again.',student_Script);
+    disp(output_msg);
+    json_parts{end+1} = build_json_test('clear check', 1, 0, output_msg, 'visible');
+    % If the file doesn't exist, write the result and stop.
+    finalize_json(json_parts);
+    continue;
+  end
+
     funcCheck = tasks{taskid}.func_test;
     termCheck = tasks{taskid}.term_check;
+    inputCheck = tasks{taskid}.input_test;
     if funcCheck == true
         %disp("In loop")
         [funcJson, student_run_error]  = function_test(student_run_error,tasks{taskid});
         json_parts = horzcat(json_parts,funcJson);
     end
     if termCheck == true
+      if inputCheck == false
       [termJson, student_run_error]  = terminal_test(student_run_error,tasks{taskid});
       json_parts = horzcat(json_parts,termJson);
+      else
+      [termJson, student_run_error]  = terminal_input_test(student_run_error,tasks{taskid});
+      json_parts = horzcat(json_parts,termJson);
+      end
     end
 
 end

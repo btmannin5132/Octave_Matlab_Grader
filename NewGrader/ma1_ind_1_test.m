@@ -1,3 +1,4 @@
+
 %% INITIALIZATION
 tank_r = 1.25; % tank inner radius (m)
 tank_l = 5.5; % tank inner length (m)
@@ -39,4 +40,4 @@ final_fluid_vol = fluid_vol(idx);
 fprintf('Number of iterations = %g\n',numIterations)
 fprintf('Remaining volume = %.2f m^3\n',final_fluid_vol)
 fprintf('Fluid height= %.2f m\n',final_fluid_height)
-disp('WARNING: The tank is now below 20 % capacity. Please refill.')
+disp('WARNING: The tank is now below 20% capacity. Please refill.')

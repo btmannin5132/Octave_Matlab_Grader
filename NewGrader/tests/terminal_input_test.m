@@ -1,22 +1,42 @@
-function [json_parts, student_run_error] = terminal_test(student_run_error,task)
-
-    solution_script_name = task.solution_file
-    student_script_name = task.student_file
-    test_points = task.term_points
-
+function [json_parts, student_run_error] = terminal_input_test(student_run_error,task)
+    global AUTOGRADER_INDEX
+    global AUTOGRADER_INPUTS
     json_parts = {};
     feedback = '';
-
+    AUTOGRADER_INDEX = 1;
     %run terminal output test
+    solution_script_name = task.solution_file;
+    student_script_name = task.student_file;
+    AUTOGRADER_INDEX = 1;
+    AUTOGRADER_INPUTS = task.term_args;
+    test_points = task.term_points;
+    args_per_test = task.inputs_per_Test;
 
-    fprintf("\nRunning Terminal Test with file %s\n",student_script_name)
+fprintf("\nRunning Terminal Test with stream inputs in file %s\n",student_script_name)
 
+while AUTOGRADER_INDEX <= length(AUTOGRADER_INPUTS)
+  %disp(AUTOGRADER_INDEX)
+  terminalValues = AUTOGRADER_INPUTS(AUTOGRADER_INDEX,:);
+  testName = sprintf("Terminal Test with input vlaues: [ %s ]\n\n",terminalValues);
+  fprintf(testName);
   try
-    reference_output = strip_output(evalc(['run ' solution_script_name]));
-    fprintf("\nReference Output:\n%s\n",reference_output)
-    student_output = strip_output(evalc(['run ' student_script_name]));
-    fprintf("\nStudent Output:\n%s\n\n",student_output)
+	warning('off', 'all');
 
+    reference_output = strip_output(evalc(['run ' solution_script_name]));
+    fprintf("Reference Output:\n%s\n\n",reference_output)
+    AUTOGRADER_INDEX = AUTOGRADER_INDEX-args_per_test;
+	  old_index = AUTOGRADER_INDEX;
+	  warning('off', 'all');
+
+    student_output = strip_output(evalc(['run ' student_script_name]));
+    fprintf("Student Output:\n%s\n\n",student_output)
+
+	if old_index == AUTOGRADER_INDEX
+		output_msg = sprintf('Your script did not take in any inputs.  Make sure you are using the input() command and not hard-coding the input values.');
+		json_parts{end+1} = build_json_test(testName, test_points, 0, output_msg, 'visible')
+    disp(output_msg)
+        return;
+	end
   catch ME
     student_run_error = true;
     student_error_message = json_escape(ME.message);
@@ -24,7 +44,8 @@ function [json_parts, student_run_error] = terminal_test(student_run_error,task)
   if (student_run_error)
     % If the student's code failed to run, fail all tests.
     output_msg = sprintf('Your script failed to run. Error: %s', student_error_message);
-    json_parts{end+1} = build_json_test('Script Execution', test_points, 0, output_msg, 'visible');
+    json_parts{end+1} = build_json_test(testName, test_points, 0, output_msg, 'visible');
+    disp(output_msg)
   else
     if ~strcmp(student_output, reference_output)
       % Find where they differ
@@ -50,17 +71,18 @@ function [json_parts, student_run_error] = terminal_test(student_run_error,task)
       end
       %error(feedback); % This will fail the test and show the feedback
       score = 0;
-      json_parts{end+1} = build_json_test("TerminalTest", test_points, score, feedback, 'visible');
+
+      json_parts{end+1} = build_json_test(testName, test_points, score, feedback, 'visible');
 
     else
-      feedback = sprintf('Output matches!'); % Or simply let the test pass
-      json_parts{end+1} = build_json_test("TerminalTest", test_points, test_points, feedback, 'visible');
+      feedback = sprintf('Output matches!\n'); % Or simply let the test pass
+      json_parts{end+1} = build_json_test(testName, test_points, test_points, feedback, 'visible');
     end
 
 
 end
-disp(feedback)
-
+  disp(feedback)
+end
 end
 
 function json_str = build_json_test(name, max_score, score, output, visibility)
