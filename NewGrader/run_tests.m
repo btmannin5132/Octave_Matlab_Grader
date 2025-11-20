@@ -21,10 +21,15 @@ catch
 
 for taskid = 1:length(tasks)
     funcCheck = tasks{taskid}.func_test;
+    termCheck = tasks{taskid}.term_check;
     if funcCheck == true
         %disp("In loop")
         [funcJson, student_run_error]  = function_test(student_run_error,tasks{taskid});
         json_parts = horzcat(json_parts,funcJson);
+    end
+    if termCheck == true
+      [termJson, student_run_error]  = terminal_test(student_run_error,tasks{taskid});
+      json_parts = horzcat(json_parts,termJson);
     end
 
 end

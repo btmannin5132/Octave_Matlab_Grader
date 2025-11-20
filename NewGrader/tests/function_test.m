@@ -8,6 +8,8 @@
     function_points = task.func_points_per_Test;
     function_outputs = task.num_outputs;
     output = "";
+
+    fprintf("\nRunning Function Test\n\n")
     try
 
       for i = 1:size(function_tests)(1)
